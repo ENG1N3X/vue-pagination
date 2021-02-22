@@ -15,7 +15,7 @@
 			<i class="material-icons left">arrow_back</i>
 			Prev
 		</button>
-		<button class="waves-effect waves-light btn" @click="nextPage" :disabled="items.length == sliceTo">
+		<button class="waves-effect waves-light btn" @click="nextPage" :disabled="itemsSorted.length == sliceTo">
 			<i class="material-icons right">arrow_forward</i>
 			Next
 		</button>
@@ -34,6 +34,7 @@ export default {
 	data() {
 		return {
 			items: [],
+			itemsSorted: [],
 			sliceFrom: SLICE_FROM,
 			sliceTo: SLICE_TO,
 			sortBy: "all"
@@ -55,15 +56,14 @@ export default {
 				const response = await fetch("https://jsonplaceholder.typicode.com/todos?_limit=14")
 				if (response.ok) {
 					this.items = await response.json()
+					this.itemsSorted = [...this.items]
 				}
 			} catch (error) {
 				console.error(error.message)
 			}
 		},
-		setContent(itemsArr) {
-			itemsArr = this.sort(itemsArr)
-
-			return itemsArr.slice(this.sliceFrom, this.sliceTo)
+		setContent(items) {
+			return items.slice(this.sliceFrom, this.sliceTo)
 		},
 		prevPage() {
 			if (this.sliceFrom != 0) {
@@ -72,21 +72,26 @@ export default {
 			}
 		},
 		nextPage() {
-			if (this.items.length != this.sliceTo) {
+			if (this.itemsSorted.length != this.sliceTo) {
 				this.sliceFrom++
 				this.sliceTo++
 			}
 		},
-		sort(itemsArrToSort) {
+		sort(items) {
+			this.sliceClear()
+
 			switch (this.sortBy) {
 				case "done":
-					itemsArrToSort = itemsArrToSort.filter(item => item.completed != false)
+					this.itemsSorted = items.filter(item => item.completed != false)
 					break;
 				case "undone":
-					itemsArrToSort = itemsArrToSort.filter(item => item.completed != true)
+					this.itemsSorted = items.filter(item => item.completed != true)
+					break;
+				default:
+					this.itemsSorted = items
 					break;
 			}
-			return JSON.parse(JSON.stringify(itemsArrToSort))
+			return JSON.parse(JSON.stringify(this.itemsSorted))
 		},
 		sliceClear() {
 			this.sliceFrom = SLICE_FROM
@@ -95,13 +100,13 @@ export default {
 	},
 	computed: {
 		displayContent() {
-			return this.setContent(this.items)
+			return this.setContent(this.itemsSorted)
 		},
 	},
 	watch: {
 		sortBy: {
 			handler() {
-				this.sliceClear()
+				this.sort(this.items)
 			}
 		}
 	}
