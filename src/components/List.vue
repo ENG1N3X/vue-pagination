@@ -1,4 +1,12 @@
 <template>
+	<div class="row right-align">
+		<a class='dropdown-trigger btn' href='#' data-target='dropdown1'>{{ sortBy }}</a>
+		<ul id='dropdown1' class='dropdown-content'>
+			<li><a href="#!" @click="sortBy = 'all'">All</a></li>
+			<li><a href="#!" @click="sortBy = 'done'">Done</a></li>
+			<li><a href="#!" @click="sortBy = 'undone'">Undone</a></li>
+		</ul>
+	</div>
 	<div class="row">
 		<AppListItem v-for="item in displayContent" :key="item.id" :item="item" />
 	</div>
@@ -16,13 +24,19 @@
 
 <script>
 import AppListItem from "@/components/ListItem.vue"
+import M from 'materialize-css'
+
+const SLICE_FROM = 0;
+const SLICE_TO = 3;
 
 export default {
+	name: "List",
 	data() {
 		return {
 			items: [],
-			sliceFrom: 0,
-			sliceTo: 3,
+			sliceFrom: SLICE_FROM,
+			sliceTo: SLICE_TO,
+			sortBy: "all"
 		}
 	},
 	components: {
@@ -31,10 +45,14 @@ export default {
 	async created() {
 		await this.fetchData()
 	},
+	mounted() {
+		const elems = document.querySelectorAll('.dropdown-trigger');
+		M.Dropdown.init(elems, {alignment: "left"});
+	},
 	methods: {
 		async fetchData() {
 			try {
-				const response = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=10")
+				const response = await fetch("https://jsonplaceholder.typicode.com/todos?_limit=14")
 				if (response.ok) {
 					this.items = await response.json()
 				}
@@ -43,6 +61,8 @@ export default {
 			}
 		},
 		setContent(itemsArr) {
+			itemsArr = this.sort(itemsArr)
+
 			return itemsArr.slice(this.sliceFrom, this.sliceTo)
 		},
 		prevPage() {
@@ -57,11 +77,33 @@ export default {
 				this.sliceTo++
 			}
 		},
+		sort(itemsArrToSort) {
+			switch (this.sortBy) {
+				case "done":
+					itemsArrToSort = itemsArrToSort.filter(item => item.completed != false)
+					break;
+				case "undone":
+					itemsArrToSort = itemsArrToSort.filter(item => item.completed != true)
+					break;
+			}
+			return JSON.parse(JSON.stringify(itemsArrToSort))
+		},
+		sliceClear() {
+			this.sliceFrom = SLICE_FROM
+			this.sliceTo = SLICE_TO
+		}
 	},
 	computed: {
 		displayContent() {
 			return this.setContent(this.items)
 		},
 	},
+	watch: {
+		sortBy: {
+			handler() {
+				this.sliceClear()
+			}
+		}
+	}
 }
 </script>

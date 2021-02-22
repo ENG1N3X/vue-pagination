@@ -3,21 +3,21 @@
 		<div class="card blue-grey darken-1">
 			<div class="card-content white-text">
 				<span class="card-title">{{ item.title }} | {{ item.id }}</span>
-				<p>{{ item.body }}</p>
+				<p>
+					Lorem ipsum dolor sit amet consectetur, adipisicing elit. Soluta nemo delectus illum, veritatis eaque unde labore ipsum, eveniet distinctio iure libero, nobis eligendi porro ex placeat quis? Odio, amet
+					asperiores?
+				</p>
 			</div>
-			<!-- <div class="card-action">
-				<a href="#">This is a link</a>
-				<a href="#">This is a link</a>
-			</div> -->
+			<div class="card-action">
+				<a href="#">{{ item.completed }}</a>
+			</div>
 		</div>
 	</div>
 </template>
 
 <script>
 export default {
-	data() {
-		return {}
-	},
+	name: "ListItem",
 	props: {
 		item: {
 			type: Object,
